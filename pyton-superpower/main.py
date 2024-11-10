@@ -1,26 +1,38 @@
-# main.py
 import os
-from image_edit_tools import remove_background, crop_image
+import json
+from image_edit_tools import ImageEditService
 
-# Define the crop percentages globally if used repeatedly
-CROP_PERCENTAGES = (0.2, 0, 0.85, 0.6)
+# Load configuration from a JSON file
+def load_config(config_file='config.json'):
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+    return config
 
 def main():
+    # Load the configuration
+    config = load_config()
+
+    # Set up image editing service with default crop percentages
+    image_service = ImageEditService()
+
+    # Get current directory and valid extensions
     current_dir = os.path.dirname(os.path.abspath(__file__))
     valid_extensions = ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.tiff')
 
+    # Process each image in the current directory
     for file_name in os.listdir(current_dir):
         if file_name.lower().endswith(valid_extensions):
             input_path = os.path.join(current_dir, file_name)
-            output_path = input_path.lower().replace('.jpg', '.png').replace(' ',
-                                                                             '-')  # Save cropped image to the same file
-            # Crop the image
-            cropped_path = input_path.replace('.jpg', '_cropped.jpg')  # Change the file extension if needed
-            crop_image(input_path, cropped_path, CROP_PERCENTAGES)
+            output_path = input_path.lower().replace('.jpg', '.png').replace(' ', '-')
 
-            # Remove background from cropped image
-            # remove_background(input_path, output_path)
+            if config.get('remove_bg', False):
+                image_service.remove_background(input_path, output_path)
 
+            if config.get('crop', False):
+                crop_percentages = config.get('crop_percentages', (0, 0, 0, 0))
+                cropped_output_path = output_path.replace('.jpg', '_cropped.jpg')
+                image_service.crop_image(input_path, cropped_output_path, crop_percentages)
 
 if __name__ == "__main__":
     main()
+

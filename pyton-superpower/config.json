@@ -1,0 +1,5 @@
+{
+    "remove_bg": false,
+    "crop": true,
+    "crop_percentages": [0.2, 0, 0.85, 0.6]
+}
